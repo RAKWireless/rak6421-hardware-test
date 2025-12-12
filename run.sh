@@ -62,13 +62,22 @@ oneTimeSetUp() {
   dependencyCheck virtualenv python3-virtualenv
   dependencyCheck i2cdetect i2c-tools
   dependencyCheck jq
+  dependencyCheck lshw
 
   # Enable I2C
-  sudo raspi-config nonint do_i2c 0
+  if [ $( raspi-config nonint get_i2c ) -ne 0 ]
+  then
+    echo "${COLOR_INFO}Enabling I2C${COLOR_END}"
+    sudo raspi-config nonint do_i2c 0
+  fi
 
   # Old libgpiod
-  sudo cp tools/libgpiod.so.2 /usr/bin/
-  sudo ldconfig
+  if [ ! -f /usr/bin/libgpiod.so.2 ]
+  then
+    echo "${COLOR_INFO}Copying libgpiod.so.2 to /usr/bin/${COLOR_END}"
+    sudo cp tools/libgpiod.so.2 /usr/bin/
+    sudo ldconfig
+  fi
 
   # info
   systemInfo
@@ -83,10 +92,7 @@ oneTimeTearDown() {
   [ "${_shunit_name_}" = 'EXIT' ] && return 0
 
   # System dependencies
-  dependencyRemove
-
-  # Tear down python environment
-  #pythonEnvRemove
+  #dependencyRemove
 
   return 0
 
@@ -147,9 +153,6 @@ testRAK18001() {
   GPIO=$GPIO tools/buzzer.sh
   assertEquals "Error playing buzzer" 0 $?
 }
-
-# current(A) = raw * 3.6 / 1024 / 149.9
-# raw = current(A) * 1024 * 149.9 / 3.6 = 426 
 
 # -----------------------------------------------------------------------------
 
