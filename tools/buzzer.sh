@@ -21,4 +21,4 @@ else
     timeout $DURATION gpioset -t ${DELAY}us -c 0 $GPIO=1
 fi
 
-return 0
+exit 0
