@@ -142,7 +142,7 @@ testRAK14003() {
   GPIO=$( echo "16,24" | cut -d',' -f$INDEX )
   gpioset -c gpiochip0 -t0 $GPIO=1 && sleep 0.5
   gpioset -c gpiochip0 -t0 $GPIO=0 && sleep 0.5
-  gpioset -c gpiochip0 -t0 $GPIO=1 && sleep 2
+  gpioset -c gpiochip0 -t0 $GPIO=1 && sleep 3
   i2cget -y 1 0x24 > /dev/null 2>&1
   assertEquals "RAK14003 not found" 0 $?
 }
