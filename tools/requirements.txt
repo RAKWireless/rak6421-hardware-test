@@ -1,0 +1,30 @@
+# Python dependencies for RAK6421 full hardware test
+# Only for sensors without compiled tools
+
+# LTR390 UV sensor (RAK12019)
+adafruit-circuitpython-ltr390==1.1.5
+
+# MCP23017 GPIO expander (RAK14003 LED Button Module)
+adafruit-circuitpython-mcp230xx==2.5.3
+
+# GPIO control - official libgpiod Python bindings
+# Note: requires libgpiod2 system package
+# Install with: sudo apt-get install libgpiod2 python3-libgpiod
+gpiod>=2.0
+
+# RV3028 RTC (RAK12002)
+rv3028==0.0.5
+
+# Adafruit Blinka (CircuitPython compatibility layer)
+Adafruit-Blinka==8.20.0
+adafruit-circuitpython-busdevice==5.2.3
+Adafruit-PlatformDetect==3.47.0
+Adafruit-PureIO==1.1.11
+
+# System dependencies
+RPi.GPIO==0.7.1
+spidev==3.6
+
+# lora sx1262 dependencies
+LoRaRF==1.4.0
+

@@ -74,9 +74,24 @@ dependencyCheck() {
 
 pythonEnvSetup() {
     echo "${COLOR_INFO}Installing required python packages${COLOR_END}"
-    [ ! -d .env ] && virtualenv .env  > /dev/null
+    
+    # Check if .env exists and has correct ownership
+    if [ -d .env ]; then
+        # Check if current user owns the .env directory
+        if [ ! -O .env ]; then
+            echo "${COLOR_WARNING}Removing .env directory with wrong ownership${COLOR_END}"
+            rm -rf .env
+        fi
+    fi
+    
+    # Create virtual environment if it doesn't exist
+    if [ ! -d .env ]; then
+        virtualenv .env  > /dev/null 2>&1
+    fi
+    
+    # Activate and install dependencies
     . .env/bin/activate
-    pip install -r tools/requirements.txt > /dev/null 
+    pip install -q -r tools/requirements.txt 2>&1 | grep -v "already satisfied" || true
 }
 
 pythonEnvRemove() {

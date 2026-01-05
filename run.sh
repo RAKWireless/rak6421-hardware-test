@@ -48,8 +48,8 @@ fi
 
 # Configurations
 CONFIGURATION=""
-[ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="rak14003 empty rak1906 rak12002 rak12019 rak12047"
-[ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak14003 rak12037 rak1906 rak12002 rak12019 rak12047"
+[ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="empty rak14003 rak1906 rak12002 rak12019 rak12047"
+[ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak12037 rak14003 rak1906 rak12002 rak12019 rak12047"
 [ "$KIT" = "rak6421-kit-industrial" ] && CONFIGURATION="rak5801 rak5802 rak18001 rak12002 empty empty"
 [ "$KIT" = "rak6421-kit-meshtastic" ] && CONFIGURATION="rak13300 empty rak18001 rak12002 rak1906 empty"
 [ "$KIT" = "rak6421-kit-meshtastic-hp" ] && CONFIGURATION="rak13302 empty rak18001 rak12002 rak1906 empty"
