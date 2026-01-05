@@ -2,8 +2,6 @@
 """Quick health-check script for the RAK12002 RTC (RV3028-C7)."""
 __copyright__ = "Copyright 2026, RAKwireless"
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 
