@@ -199,7 +199,7 @@ def _build_tests_from_junit(
             "name": name,
             "status": status,
             "duration_seconds": duration,
-            "assertions": assertions,
+            # "assertions": assertions,
         }
         if error_msg:
             test_info["error"] = error_msg
