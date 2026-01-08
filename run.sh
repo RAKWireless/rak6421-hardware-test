@@ -48,8 +48,8 @@ fi
 
 # Configurations
 CONFIGURATION=""
-[ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="empty rak14003 rak1906 rak12002 rak12019 rak12047"
-[ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak12037 rak14003 rak1906 rak12002 rak12019 rak12047"
+[ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="empty empty rak1906 rak12002 rak12019 rak12047"
+[ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak12037 empty rak1906 rak12002 rak12019 rak12047"
 [ "$KIT" = "rak6421-kit-industrial" ] && CONFIGURATION="rak5801 rak5802 rak18001 rak12002 empty empty"
 [ "$KIT" = "rak6421-kit-meshtastic" ] && CONFIGURATION="rak13300 empty rak18001 rak12002 rak1906 empty"
 [ "$KIT" = "rak6421-kit-meshtastic-hp" ] && CONFIGURATION="rak13302 empty rak18001 rak12002 rak1906 empty"
@@ -137,15 +137,6 @@ testRAK12047() {
   assertEquals "RAK12047 not found" 0 $?
 }
 
-testRAK14003() {
-  INDEX=$( strindex "$CONFIGURATION" "rak14003" )
-  GPIO=$( echo "16,24" | cut -d',' -f$INDEX )
-  gpioset -c gpiochip0 -t0 $GPIO=1 && sleep 0.5
-  gpioset -c gpiochip0 -t0 $GPIO=0 && sleep 0.5
-  gpioset -c gpiochip0 -t0 $GPIO=1 && sleep 3
-  i2cget -y 1 0x24 > /dev/null 2>&1
-  assertEquals "RAK14003 not found" 0 $?
-}
 
 testRAK18001() {
   INDEX=$( strindex "$CONFIGURATION" "rak18001" )
@@ -165,7 +156,6 @@ suite() {
   [ $( echo $CONFIGURATION | grep -c -w "rak12019" ) -eq 1 ] && suite_addTest testRAK12019
   [ $( echo $CONFIGURATION | grep -c -w "rak12037" ) -eq 1 ] && suite_addTest testRAK12037
   [ $( echo $CONFIGURATION | grep -c -w "rak12047" ) -eq 1 ] && suite_addTest testRAK12047
-  [ $( echo $CONFIGURATION | grep -c -w "rak14003" ) -eq 1 ] && suite_addTest testRAK14003
   [ $( echo $CONFIGURATION | grep -c -w "rak18001" ) -eq 1 ] && suite_addTest testRAK18001
 
 }

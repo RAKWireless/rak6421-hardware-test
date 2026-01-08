@@ -70,8 +70,8 @@ fi
 
 # Configurations
 CONFIGURATION=""
-[ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="empty rak14003 rak1906 rak12002 rak12019 rak12047"
-[ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak12037 rak14003 rak1906 rak12002 rak12019 rak12047"
+[ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="empty empty rak1906 rak12002 rak12019 rak12047"
+[ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak12037 empty rak1906 rak12002 rak12019 rak12047"
 [ "$KIT" = "rak6421-kit-industrial" ] && CONFIGURATION="rak5801 rak5802 rak18001 rak12002 empty empty"
 [ "$KIT" = "rak6421-kit-meshtastic" ] && CONFIGURATION="rak13300 empty rak18001 rak12002 rak1906 empty"
 [ "$KIT" = "rak6421-kit-meshtastic-hp" ] && CONFIGURATION="rak13302 empty rak18001 rak12002 rak1906 empty"
@@ -267,25 +267,6 @@ testRAK12047() {
   [ -n "$VOC_INDEX" ] && json_store_output "testRAK12047" "$VOC_INDEX"
 }
 
-testRAK14003() {
-  conditional_echo "${COLOR_INFO}Testing RAK14003 (LED Button Module)...${COLOR_END}"
-  
-  # I2C detection
-  # i2cget -y 1 0x24 > /dev/null 2>&1
-  # assertEquals "RAK14003 not found on I2C" 0 $?
-  
-  # Determine reset pin based on slot position
-  INDEX=$( strindex "$CONFIGURATION" "rak14003" )
-  RESET_PIN=$( echo "16,24" | cut -d',' -f$INDEX )
-  
-  # Test LED control using Python script
-  OUTPUT=$( RAK14003_RESET_PIN=$RESET_PIN python3 tools/test_rak14003.py 2>&1 )
-  RESULT=$?
-  assertEquals "RAK14003 LED test failed" 0 $RESULT
-  conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
-  # Store output for JSON
-  [ -n "$OUTPUT" ] && json_store_output "testRAK14003" "$OUTPUT"
-}
 
 testRAK18001() {
   conditional_echo "${COLOR_INFO}Testing RAK18001 (Buzzer Module)...${COLOR_END}"
@@ -354,7 +335,6 @@ suite() {
       rak12019) suite_addTest testRAK12019 ;;
       rak12037) suite_addTest testRAK12037 ;;
       rak12047) suite_addTest testRAK12047 ;;
-      rak14003) suite_addTest testRAK14003 ;;
       rak18001) suite_addTest testRAK18001 ;;
       rak13300) suite_addTest testRAK13300 ;;
       rak13302) suite_addTest testRAK13302 ;;
@@ -399,7 +379,6 @@ if [ -n "$SHUNIT_ARGS" ]; then
       rak12019) TEST_LIST="$TEST_LIST testRAK12019" ;;
       rak12037) TEST_LIST="$TEST_LIST testRAK12037" ;;
       rak12047) TEST_LIST="$TEST_LIST testRAK12047" ;;
-      rak14003) TEST_LIST="$TEST_LIST testRAK14003" ;;
       rak18001) TEST_LIST="$TEST_LIST testRAK18001" ;;
       rak13300) TEST_LIST="$TEST_LIST testRAK13300" ;;
       rak13302) TEST_LIST="$TEST_LIST testRAK13302" ;;
