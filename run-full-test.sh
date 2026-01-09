@@ -3,7 +3,11 @@
 # -----------------------------------------------------------------------------
 # Full hardware test suite for RAK6421 boards
 # Based on run.sh, added with actual sensor data reading
+# Note: This script uses system-wide Python packages (no virtual environment)
 # -----------------------------------------------------------------------------
+
+# Set USE_VENV=0 to disable virtual environment in utils.sh
+export USE_VENV=0
 
 . ./tools/utils.sh
 
@@ -268,6 +272,46 @@ testRAK12047() {
 }
 
 
+testRAK5801() {
+  conditional_echo "${COLOR_INFO}Testing RAK5801 (4-20mA Interface)...${COLOR_END}"
+  
+  # Determine enable pin based on slot position
+  INDEX=$( strindex "$CONFIGURATION" "rak5801" )
+  ENABLE_PIN=$( echo "17,23" | cut -d',' -f$INDEX )
+  
+  # Run RAK5801 test script
+  OUTPUT=$( ENABLE_PIN=$ENABLE_PIN tools/test_rak5801.sh 2>&1 )
+  RESULT=$?
+  
+  assertEquals "RAK5801 test failed" 0 $RESULT
+  if [ $RESULT -eq 0 ]; then
+    conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
+  else
+    conditional_echo "${COLOR_ERROR}  ${OUTPUT}${COLOR_END}"
+  fi
+  
+  # Store output for JSON
+  [ -n "$OUTPUT" ] && json_store_output "testRAK5801" "$OUTPUT"
+}
+
+testRAK5802() {
+  conditional_echo "${COLOR_INFO}Testing RAK5802 (RS485 Interface)...${COLOR_END}"
+  
+  # Run RS485 receiver test with timeout
+  OUTPUT=$( TIMEOUT=10 tools/test_rak5802_receiver.sh 2>&1 )
+  RESULT=$?
+  
+  assertEquals "RAK5802 test failed" 0 $RESULT
+  if [ $RESULT -eq 0 ]; then
+    conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
+  else
+    conditional_echo "${COLOR_ERROR}  ${OUTPUT}${COLOR_END}"
+  fi
+  
+  # Store output for JSON
+  [ -n "$OUTPUT" ] && json_store_output "testRAK5802" "$OUTPUT"
+}
+
 testRAK18001() {
   conditional_echo "${COLOR_INFO}Testing RAK18001 (Buzzer Module)...${COLOR_END}"
   
@@ -335,6 +379,8 @@ suite() {
       rak12019) suite_addTest testRAK12019 ;;
       rak12037) suite_addTest testRAK12037 ;;
       rak12047) suite_addTest testRAK12047 ;;
+      rak5801) suite_addTest testRAK5801 ;;
+      rak5802) suite_addTest testRAK5802 ;;
       rak18001) suite_addTest testRAK18001 ;;
       rak13300) suite_addTest testRAK13300 ;;
       rak13302) suite_addTest testRAK13302 ;;
@@ -379,6 +425,8 @@ if [ -n "$SHUNIT_ARGS" ]; then
       rak12019) TEST_LIST="$TEST_LIST testRAK12019" ;;
       rak12037) TEST_LIST="$TEST_LIST testRAK12037" ;;
       rak12047) TEST_LIST="$TEST_LIST testRAK12047" ;;
+      rak5801) TEST_LIST="$TEST_LIST testRAK5801" ;;
+      rak5802) TEST_LIST="$TEST_LIST testRAK5802" ;;
       rak18001) TEST_LIST="$TEST_LIST testRAK18001" ;;
       rak13300) TEST_LIST="$TEST_LIST testRAK13300" ;;
       rak13302) TEST_LIST="$TEST_LIST testRAK13302" ;;

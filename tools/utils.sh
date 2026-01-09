@@ -75,6 +75,25 @@ dependencyCheck() {
 pythonEnvSetup() {
     echo "${COLOR_INFO}Installing required python packages${COLOR_END}"
     
+    # Check if USE_VENV is set to 0 (no virtual environment)
+    if [ "${USE_VENV:-1}" = "0" ]; then
+        echo "${COLOR_INFO}Installing packages system-wide (no virtual environment)${COLOR_END}"
+        
+        # Check if pip supports --break-system-packages flag
+        PIP_FLAGS=""
+        if pip3 install --help | grep -q "break-system-packages" 2>/dev/null; then
+            PIP_FLAGS="--break-system-packages"
+            echo "${COLOR_INFO}Using --break-system-packages flag${COLOR_END}"
+        fi
+        
+        # Install packages system-wide
+        sudo pip3 install -q $PIP_FLAGS -r tools/requirements.txt 2>&1 | grep -v "already satisfied" || true
+        return 0
+    fi
+    
+    # Default: Use virtual environment
+    echo "${COLOR_INFO}Using virtual environment${COLOR_END}"
+    
     # Check if .env exists and has correct ownership
     if [ -d .env ]; then
         # Check if current user owns the .env directory

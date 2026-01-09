@@ -137,6 +137,17 @@ testRAK12047() {
   assertEquals "RAK12047 not found" 0 $?
 }
 
+testRAK5801() {
+  INDEX=$( strindex "$CONFIGURATION" "rak5801" )
+  ENABLE_PIN=$( echo "17,23" | cut -d',' -f$INDEX )
+  OUTPUT=$( ENABLE_PIN=$ENABLE_PIN tools/test_rak5801.sh 2>&1 )
+  assertEquals "RAK5801 test failed" 0 $?
+}
+
+testRAK5802() {
+  OUTPUT=$( TIMEOUT=10 tools/test_rak5802_receiver.sh 2>&1 )
+  assertEquals "RAK5802 test failed" 0 $?
+}
 
 testRAK18001() {
   INDEX=$( strindex "$CONFIGURATION" "rak18001" )
@@ -156,6 +167,8 @@ suite() {
   [ $( echo $CONFIGURATION | grep -c -w "rak12019" ) -eq 1 ] && suite_addTest testRAK12019
   [ $( echo $CONFIGURATION | grep -c -w "rak12037" ) -eq 1 ] && suite_addTest testRAK12037
   [ $( echo $CONFIGURATION | grep -c -w "rak12047" ) -eq 1 ] && suite_addTest testRAK12047
+  [ $( echo $CONFIGURATION | grep -c -w "rak5801" ) -eq 1 ] && suite_addTest testRAK5801
+  [ $( echo $CONFIGURATION | grep -c -w "rak5802" ) -eq 1 ] && suite_addTest testRAK5802
   [ $( echo $CONFIGURATION | grep -c -w "rak18001" ) -eq 1 ] && suite_addTest testRAK18001
 
 }
