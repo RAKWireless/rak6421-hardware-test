@@ -297,9 +297,16 @@ testRAK5801() {
 testRAK5802() {
   conditional_echo "${COLOR_INFO}Testing RAK5802 (RS485 Interface)...${COLOR_END}"
   
+  # Start sender in background
+  ./tools/test_rak5802_sender.sh > /dev/null 2>&1 &
+  SENDER_PID=$!
+  
   # Run RS485 receiver test with timeout
   OUTPUT=$( TIMEOUT=10 tools/test_rak5802_receiver.sh 2>&1 )
   RESULT=$?
+  
+  # Stop sender
+  kill $SENDER_PID >/dev/null 2>&1
   
   assertEquals "RAK5802 test failed" 0 $RESULT
   if [ $RESULT -eq 0 ]; then
