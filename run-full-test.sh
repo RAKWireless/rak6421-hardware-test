@@ -17,6 +17,8 @@ KITS="
   rak6421-kit-environment-1
   rak6421-kit-environment-2
   rak6421-kit-industrial
+  rak6421-kit-meshtastic-old
+  rak6421-kit-meshtastic-hp-old
   rak6421-kit-meshtastic
   rak6421-kit-meshtastic-hp
 "
@@ -77,8 +79,10 @@ CONFIGURATION=""
 [ "$KIT" = "rak6421-kit-environment-1" ] && CONFIGURATION="empty empty rak1906 rak12002 rak12019 rak12047"
 [ "$KIT" = "rak6421-kit-environment-2" ] && CONFIGURATION="rak12037 empty rak1906 rak12002 rak12019 rak12047"
 [ "$KIT" = "rak6421-kit-industrial" ] && CONFIGURATION="rak5801 rak5802 rak18001 rak12002 empty empty"
-[ "$KIT" = "rak6421-kit-meshtastic" ] && CONFIGURATION="rak13300 empty rak18001 rak12002 rak1906 empty"
-[ "$KIT" = "rak6421-kit-meshtastic-hp" ] && CONFIGURATION="rak13302 empty rak18001 rak12002 rak1906 empty"
+[ "$KIT" = "rak6421-kit-meshtastic-old" ] && CONFIGURATION="rak13300 empty rak18001 rak12002 rak1906 empty"
+[ "$KIT" = "rak6421-kit-meshtastic-hp-old" ] && CONFIGURATION="rak13302 empty rak18001 rak12002 rak1906 empty"
+[ "$KIT" = "rak6421-kit-meshtastic" ] && CONFIGURATION="rak13300 empty rak12501 rak1901 rak1906 empty"
+[ "$KIT" = "rak6421-kit-meshtastic-hp" ] && CONFIGURATION="rak13302 empty rak12501 rak1901 rak1906 empty"
 
 # JSON output data structure
 JSON_START_TIME=$(date +%s)
@@ -182,6 +186,18 @@ testADC() {
   fi
 }
 
+testRAK1901() {
+  conditional_echo "${COLOR_INFO}Testing RAK1901 (SHTC3 Temperature & Humidity Sensor)...${COLOR_END}"
+  
+  # Read sensor data using compiled tool
+  OUTPUT=$( ./tools/shtc3 -e read --times=1 2>&1 | grep -E "temperature|humidity" | head -2 | tr '\n' ' ' )
+  RESULT=$?
+  assertEquals "RAK1901 data read failed" 0 $RESULT
+  [ -n "$OUTPUT" ] && conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
+  # Store output for JSON
+  [ -n "$OUTPUT" ] && json_store_output "testRAK1901" "$OUTPUT"
+}
+
 testRAK1906() {
   conditional_echo "${COLOR_INFO}Testing RAK1906 (BME680 Environmental Sensor)...${COLOR_END}"
   
@@ -269,6 +285,24 @@ testRAK12047() {
   [ -n "$VOC_INDEX" ] && conditional_echo "${COLOR_INFO}  ${VOC_INDEX}${COLOR_END}"
   # Store output for JSON
   [ -n "$VOC_INDEX" ] && json_store_output "testRAK12047" "$VOC_INDEX"
+}
+
+testRAK12501() {
+  conditional_echo "${COLOR_INFO}Testing RAK12501 (GNSS GPS Module)...${COLOR_END}"
+  
+  # Run GNSS test script
+  OUTPUT=$( tools/test_rak12501.sh 2>&1 )
+  RESULT=$?
+  
+  assertEquals "RAK12501 test failed" 0 $RESULT
+  if [ $RESULT -eq 0 ]; then
+    conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
+  else
+    conditional_echo "${COLOR_ERROR}  ${OUTPUT}${COLOR_END}"
+  fi
+  
+  # Store output for JSON
+  [ -n "$OUTPUT" ] && json_store_output "testRAK12501" "$OUTPUT"
 }
 
 
@@ -381,11 +415,13 @@ suite() {
   # Add tests based on configuration - use exact word matching to avoid false positives
   for module in $CONFIGURATION; do
     case "$module" in
+      rak1901) suite_addTest testRAK1901 ;;
       rak1906) suite_addTest testRAK1906 ;;
       rak12002) suite_addTest testRAK12002 ;;
       rak12019) suite_addTest testRAK12019 ;;
       rak12037) suite_addTest testRAK12037 ;;
       rak12047) suite_addTest testRAK12047 ;;
+      rak12501) suite_addTest testRAK12501 ;;
       rak5801) suite_addTest testRAK5801 ;;
       rak5802) suite_addTest testRAK5802 ;;
       rak18001) suite_addTest testRAK18001 ;;
@@ -427,11 +463,13 @@ if [ -n "$SHUNIT_ARGS" ]; then
   TEST_LIST="testADC"
   for module in $CONFIGURATION; do
     case "$module" in
+      rak1901) TEST_LIST="$TEST_LIST testRAK1901" ;;
       rak1906) TEST_LIST="$TEST_LIST testRAK1906" ;;
       rak12002) TEST_LIST="$TEST_LIST testRAK12002" ;;
       rak12019) TEST_LIST="$TEST_LIST testRAK12019" ;;
       rak12037) TEST_LIST="$TEST_LIST testRAK12037" ;;
       rak12047) TEST_LIST="$TEST_LIST testRAK12047" ;;
+      rak12501) TEST_LIST="$TEST_LIST testRAK12501" ;;
       rak5801) TEST_LIST="$TEST_LIST testRAK5801" ;;
       rak5802) TEST_LIST="$TEST_LIST testRAK5802" ;;
       rak18001) TEST_LIST="$TEST_LIST testRAK18001" ;;
