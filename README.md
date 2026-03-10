@@ -86,3 +86,63 @@ Ran 6 tests.
 FAILED (failures=4)
 
 ```
+
+### Full test (JSON output)
+
+You can also run `run-full-test.sh` and get a more organized JSON report.
+
+```bash
+sudo ./run-full-test.sh rak6421-kit-wismesh-station --json
+```
+
+Example output:
+
+```json
+{
+  "test_suite": "RAK6421 Hardware Test",
+  "configuration": "rak6421-kit-wismesh-station",
+  "timestamp": "2026-03-10T06:38:54.658283Z",
+  "duration_seconds": 19.804811697,
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "status": "PASS"
+  },
+  "metadata": {
+    "system": {
+      "cpu": "Raspberry Pi 4 Model B Rev 1.5",
+      "cpu_serial": "10000000add681b3",
+      "memory": "3.7Gi",
+      "storage": "15G",
+      "os": "rakpios-0.9.3-meshtasticd-2.7.15-arm64",
+      "device_eui": "e45f01FFFEb14eec"
+    }
+  },
+  "tests": [
+    {
+      "name": "testRAK13300",
+      "status": "PASS",
+      "duration_seconds": 15.661545101,
+      "output": "LoRa CW test passed. You should measure 22dBm output power."
+    },
+    {
+      "name": "testSystemInfo",
+      "status": "PASS",
+      "duration_seconds": 0.003773739
+    },
+    {
+      "name": "testADC",
+      "status": "PASS",
+      "duration_seconds": 0.075085633,
+      "output": "ADS1115 test succeed"
+    },
+    {
+      "name": "testRAK12501",
+      "status": "PASS",
+      "duration_seconds": 0.548063778,
+      "output": "GNSS module test passed: received 3 lines with continuous output"
+    }
+  ]
+}
+```
