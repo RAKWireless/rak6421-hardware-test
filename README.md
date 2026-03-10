@@ -2,6 +2,12 @@
 
 This is a shell script that uses shutil2 to perform unit tests on different predefined configurations based on a RAK6421. Different tests are run based on the different possible configurations. Conofiguration are defined by their configuration ID, a string that uniquely identifies the features in a device.
 
+## EEPROM flashing guide
+
+For step-by-step instructions to flash and verify RAK6421 HAT EEPROM (including I2C bus 0 setup, write-enable pin shorting, and `/proc/device-tree/hat/` checks), see:
+
+- `EEPROM-FLASHING-GUIDE.md`
+
 Current configuration IDs are:
 
 ```
