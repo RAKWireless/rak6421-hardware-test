@@ -21,6 +21,8 @@ KITS="
   rak6421-kit-meshtastic-hp-old
   rak6421-kit-meshtastic
   rak6421-kit-meshtastic-hp
+  rak6421-kit-wismesh-station
+  rak6421-kit-wismesh-station-hp
 "
 
 print_kits() {
@@ -83,6 +85,8 @@ CONFIGURATION=""
 [ "$KIT" = "rak6421-kit-meshtastic-hp-old" ] && CONFIGURATION="rak13302 empty rak18001 rak12002 rak1906 empty"
 [ "$KIT" = "rak6421-kit-meshtastic" ] && CONFIGURATION="rak13300 empty rak12501 rak1901 rak1906 empty"
 [ "$KIT" = "rak6421-kit-meshtastic-hp" ] && CONFIGURATION="rak13302 empty rak12501 rak1901 rak1906 empty"
+[ "$KIT" = "rak6421-kit-wismesh-station" ] && CONFIGURATION="rak13300 empty rak12501 empty empty empty"
+[ "$KIT" = "rak6421-kit-wismesh-station-hp" ] && CONFIGURATION="rak13302 empty rak12501 empty empty empty"
 
 # JSON output data structure
 JSON_START_TIME=$(date +%s)
@@ -409,10 +413,19 @@ testRAK13302() {
 # -----------------------------------------------------------------------------
 
 suite() {
+  # Add LoRa tests FIRST (for immediate RF signal verification on spectrum analyzer)
+  for module in $CONFIGURATION; do
+    case "$module" in
+      rak13300) suite_addTest testRAK13300 ;;
+      rak13302) suite_addTest testRAK13302 ;;
+      *) ;;
+    esac
+  done
+
   # ADC test (required for all configurations)
   suite_addTest testADC
 
-  # Add tests based on configuration - use exact word matching to avoid false positives
+  # Add remaining tests based on configuration
   for module in $CONFIGURATION; do
     case "$module" in
       rak1901) suite_addTest testRAK1901 ;;
@@ -425,8 +438,8 @@ suite() {
       rak5801) suite_addTest testRAK5801 ;;
       rak5802) suite_addTest testRAK5802 ;;
       rak18001) suite_addTest testRAK18001 ;;
-      rak13300) suite_addTest testRAK13300 ;;
-      rak13302) suite_addTest testRAK13302 ;;
+      rak13300) ;;  # Already added above
+      rak13302) ;;  # Already added above
       empty) ;;  # Skip empty slots
       *) ;;  # Ignore unknown modules
     esac
@@ -460,7 +473,20 @@ fi
 # shunit2 will process arguments from $@ when sourced
 if [ -n "$SHUNIT_ARGS" ]; then
   # Build list of tests to run based on configuration
-  TEST_LIST="testADC"
+  # Add LoRa tests FIRST (for immediate RF signal verification)
+  TEST_LIST=""
+  for module in $CONFIGURATION; do
+    case "$module" in
+      rak13300) TEST_LIST="$TEST_LIST testRAK13300" ;;
+      rak13302) TEST_LIST="$TEST_LIST testRAK13302" ;;
+      *) ;;
+    esac
+  done
+  
+  # Add ADC test
+  TEST_LIST="$TEST_LIST testADC"
+  
+  # Add remaining tests
   for module in $CONFIGURATION; do
     case "$module" in
       rak1901) TEST_LIST="$TEST_LIST testRAK1901" ;;
@@ -473,8 +499,8 @@ if [ -n "$SHUNIT_ARGS" ]; then
       rak5801) TEST_LIST="$TEST_LIST testRAK5801" ;;
       rak5802) TEST_LIST="$TEST_LIST testRAK5802" ;;
       rak18001) TEST_LIST="$TEST_LIST testRAK18001" ;;
-      rak13300) TEST_LIST="$TEST_LIST testRAK13300" ;;
-      rak13302) TEST_LIST="$TEST_LIST testRAK13302" ;;
+      rak13300) ;;  # Already added above
+      rak13302) ;;  # Already added above
       empty) ;;  # Skip empty slots
       *) ;;  # Ignore unknown modules
     esac
