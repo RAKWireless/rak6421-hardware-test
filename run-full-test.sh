@@ -126,11 +126,6 @@ oneTimeSetUp() {
 
   # Setup Python virtual environment and install dependencies (only for sensors without compiled tools)
   pythonEnvSetup
-
-  # System info - only print if not JSON mode
-  if [ $OUTPUT_JSON -eq 0 ]; then
-    systemInfo
-  fi
   
   return 0
 
@@ -156,6 +151,13 @@ oneTimeTearDown() {
 # Note: Function name must NOT start with "test" to avoid shunit2 auto-discovery
 conditional_echo() {
   [ $OUTPUT_JSON -eq 0 ] && echo "$@"
+}
+
+testSystemInfo() {
+  if [ $OUTPUT_JSON -eq 0 ]; then
+    systemInfo
+  fi
+  return 0
 }
 
 # Helper function to store test output for JSON
@@ -413,7 +415,7 @@ testRAK13302() {
 # -----------------------------------------------------------------------------
 
 suite() {
-  # Add LoRa tests FIRST (for immediate RF signal verification on spectrum analyzer)
+  # LoRa tests run first so RF output is visible on spectrum analyzer immediately
   for module in $CONFIGURATION; do
     case "$module" in
       rak13300) suite_addTest testRAK13300 ;;
@@ -422,10 +424,11 @@ suite() {
     esac
   done
 
-  # ADC test (required for all configurations)
+  # System info and ADC after LoRa
+  suite_addTest testSystemInfo
   suite_addTest testADC
 
-  # Add remaining tests based on configuration
+  # Remaining tests
   for module in $CONFIGURATION; do
     case "$module" in
       rak1901) suite_addTest testRAK1901 ;;
@@ -440,8 +443,8 @@ suite() {
       rak18001) suite_addTest testRAK18001 ;;
       rak13300) ;;  # Already added above
       rak13302) ;;  # Already added above
-      empty) ;;  # Skip empty slots
-      *) ;;  # Ignore unknown modules
+      empty) ;;
+      *) ;;
     esac
   done
 }
@@ -473,7 +476,7 @@ fi
 # shunit2 will process arguments from $@ when sourced
 if [ -n "$SHUNIT_ARGS" ]; then
   # Build list of tests to run based on configuration
-  # Add LoRa tests FIRST (for immediate RF signal verification)
+  # LoRa tests run first so RF output is visible on spectrum analyzer immediately
   TEST_LIST=""
   for module in $CONFIGURATION; do
     case "$module" in
@@ -482,11 +485,11 @@ if [ -n "$SHUNIT_ARGS" ]; then
       *) ;;
     esac
   done
-  
-  # Add ADC test
-  TEST_LIST="$TEST_LIST testADC"
-  
-  # Add remaining tests
+
+  # System info and ADC after LoRa
+  TEST_LIST="$TEST_LIST testSystemInfo testADC"
+
+  # Remaining tests
   for module in $CONFIGURATION; do
     case "$module" in
       rak1901) TEST_LIST="$TEST_LIST testRAK1901" ;;
@@ -501,8 +504,8 @@ if [ -n "$SHUNIT_ARGS" ]; then
       rak18001) TEST_LIST="$TEST_LIST testRAK18001" ;;
       rak13300) ;;  # Already added above
       rak13302) ;;  # Already added above
-      empty) ;;  # Skip empty slots
-      *) ;;  # Ignore unknown modules
+      empty) ;;
+      *) ;;
     esac
   done
   

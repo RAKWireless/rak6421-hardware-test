@@ -87,7 +87,11 @@ pythonEnvSetup() {
         fi
         
         # Install packages system-wide
-        sudo pip3 install -q $PIP_FLAGS -r tools/requirements.txt 2>&1 | grep -v "already satisfied" || true
+        # Suppress pip root-user warning noise (keep real errors visible)
+        sudo PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1 \
+            pip3 install -q $PIP_FLAGS -r tools/requirements.txt 2>&1 \
+          | grep -v -E "already satisfied|Running pip as the 'root' user|broken permissions|It is recommended to use a virtual environment instead|https://pip\\.pypa\\.io/warnings/venv" \
+          || true
         return 0
     fi
     
