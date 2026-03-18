@@ -161,10 +161,25 @@ def _normalize_output(value: str) -> str:
     return " ".join(value.replace("\r", " ").replace("\n", " ").split())
 
 
+def _parse_nonzero_return_errors(raw_output: str) -> set:
+    """Extract test names that had non-zero return code errors from shunit2 output."""
+    if not raw_output:
+        return set()
+    errors: set = set()
+    pattern = re.compile(r"shunit2:ERROR\s+(\w+)\(\)\s+returned non-zero return code")
+    for line in raw_output.splitlines():
+        cleaned = re.sub(r"\x1b\[[0-9;]*m", "", line)
+        match = pattern.search(cleaned)
+        if match:
+            errors.add(match.group(1))
+    return errors
+
+
 def _build_tests_from_junit(
     junit_path: str,
     stored_outputs: Dict[str, str],
     parsed_output: Dict[str, List[str]],
+    nonzero_return_errors: set | None = None,
 ) -> List[Dict[str, object]]:
     tree = None
     try:
@@ -186,8 +201,11 @@ def _build_tests_from_junit(
             status = "FAIL"
             error_msg = failure.get("message") or failure.text or ""
         elif error is not None:
-            status = "ERROR"
+            status = "FAIL"
             error_msg = error.get("message") or error.text or ""
+        elif nonzero_return_errors and name in nonzero_return_errors:
+            status = "FAIL"
+            error_msg = f"{name}() returned non-zero return code"
 
         sensor_data = stored_outputs.get(name)
         if not sensor_data:
@@ -233,7 +251,9 @@ def main() -> int:
     args = parse_arguments()
     junit_exists = bool(args.junit and Path(args.junit).is_file())
     stored_outputs = _load_stored_outputs()
-    parsed_output = _parse_test_output(_read_optional_file(args.test_output))
+    raw_test_output = _read_optional_file(args.test_output)
+    parsed_output = _parse_test_output(raw_test_output)
+    nonzero_return_errors = _parse_nonzero_return_errors(raw_test_output)
     system_info = _get_system_info()
     timestamp = args.timestamp or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -255,7 +275,15 @@ def main() -> int:
             summary["failed"] = int(root.get("failures", summary["failed"]))
             summary["passed"] = summary["total"] - summary["failed"]
             summary["status"] = "PASS" if summary["failed"] == 0 else "FAIL"
-            tests = _build_tests_from_junit(args.junit, stored_outputs, parsed_output)
+            tests = _build_tests_from_junit(args.junit, stored_outputs, parsed_output, nonzero_return_errors)
+
+            # Recount from actual test results (JUnit XML failures attr only
+            # counts assertion failures, not non-zero return code errors).
+            actual_failed = sum(1 for t in tests if t.get("status") != "PASS")
+            summary["total"] = len(tests)
+            summary["failed"] = actual_failed
+            summary["passed"] = summary["total"] - summary["failed"]
+            summary["status"] = "PASS" if summary["failed"] == 0 else "FAIL"
         except Exception as exc:
             print(f"{{\"error\": \"Failed to parse test results: {exc}\"}}", file=sys.stderr)
             return 1

@@ -97,9 +97,10 @@ JSON_TEST_OUTPUTS=""
 
 oneTimeSetUp() {
 
-  # Redirect output to /dev/null if JSON mode (已移除，fd 只在主流程保存/恢复)
+  # In JSON mode, silence stdout but keep stderr flowing to the test
+  # output file so that shunit2:ERROR messages are captured for parsing.
   if [ $OUTPUT_JSON -eq 1 ]; then
-    exec 1>/dev/null 2>&1
+    exec 1>/dev/null
   fi
 
   # Install system dependencies
@@ -197,11 +198,10 @@ testRAK1901() {
   
   # Read sensor data using compiled tool
   OUTPUT=$( ./tools/shtc3 -e read --times=1 2>&1 | grep -E "temperature|humidity" | head -2 | tr '\n' ' ' )
-  RESULT=$?
-  assertEquals "RAK1901 data read failed" 0 $RESULT
+  assertNotNull "RAK1901 no sensor data received" "$OUTPUT"
   [ -n "$OUTPUT" ] && conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
   # Store output for JSON
-  [ -n "$OUTPUT" ] && json_store_output "testRAK1901" "$OUTPUT"
+  json_store_output "testRAK1901" "${OUTPUT:-No sensor data}"
 }
 
 testRAK1906() {
@@ -213,11 +213,10 @@ testRAK1906() {
   
   # Read sensor data using compiled tool
   OUTPUT=$( ./tools/bme680 -e read --addr=0 --times=1 2>&1 | grep -E "temperature|humidity|pressure" | head -3 | tr '\n' ' ' )
-  RESULT=$?
-  assertEquals "RAK1906 data read failed" 0 $RESULT
+  assertNotNull "RAK1906 no sensor data received" "$OUTPUT"
   [ -n "$OUTPUT" ] && conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
   # Store output for JSON
-  [ -n "$OUTPUT" ] && json_store_output "testRAK1906" "$OUTPUT"
+  json_store_output "testRAK1906" "${OUTPUT:-No sensor data}"
 }
 
 testRAK12002() {
@@ -240,6 +239,7 @@ testRAK12002() {
 
   # Store output for JSON (full raw text for easier debugging)
   [ -n "$OUTPUT" ] && json_store_output "testRAK12002" "$OUTPUT"
+  return 0
 }
 
 testRAK12019() {
@@ -256,6 +256,7 @@ testRAK12019() {
   conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
   # Store output for JSON
   [ -n "$OUTPUT" ] && json_store_output "testRAK12019" "$OUTPUT"
+  return 0
 }
 
 testRAK12037() {
@@ -267,11 +268,10 @@ testRAK12037() {
   
   # Read sensor data using compiled tool
   OUTPUT=$( ./tools/scd30 -e read --times=1 2>&1 | grep -E "co2|temperature|humidity" | head -3 | tr '\n' ' ' )
-  RESULT=$?
-  assertEquals "RAK12037 data read failed" 0 $RESULT
+  assertNotNull "RAK12037 no sensor data received" "$OUTPUT"
   [ -n "$OUTPUT" ] && conditional_echo "${COLOR_INFO}  ${OUTPUT}${COLOR_END}"
   # Store output for JSON
-  [ -n "$OUTPUT" ] && json_store_output "testRAK12037" "$OUTPUT"
+  json_store_output "testRAK12037" "${OUTPUT:-No sensor data}"
 }
 
 testRAK12047() {
@@ -288,9 +288,10 @@ testRAK12047() {
   
   # Extract VOC gas index from output
   VOC_INDEX=$( echo "$OUTPUT" | grep -i "voc gas index" | head -1 )
+  assertNotNull "RAK12047 no VOC gas index received" "$VOC_INDEX"
   [ -n "$VOC_INDEX" ] && conditional_echo "${COLOR_INFO}  ${VOC_INDEX}${COLOR_END}"
   # Store output for JSON
-  [ -n "$VOC_INDEX" ] && json_store_output "testRAK12047" "$VOC_INDEX"
+  json_store_output "testRAK12047" "${VOC_INDEX:-No sensor data}"
 }
 
 testRAK12501() {
@@ -309,6 +310,7 @@ testRAK12501() {
   
   # Store output for JSON
   [ -n "$OUTPUT" ] && json_store_output "testRAK12501" "$OUTPUT"
+  return 0
 }
 
 
@@ -332,6 +334,7 @@ testRAK5801() {
   
   # Store output for JSON
   [ -n "$OUTPUT" ] && json_store_output "testRAK5801" "$OUTPUT"
+  return 0
 }
 
 testRAK5802() {
@@ -357,6 +360,7 @@ testRAK5802() {
   
   # Store output for JSON
   [ -n "$OUTPUT" ] && json_store_output "testRAK5802" "$OUTPUT"
+  return 0
 }
 
 testRAK18001() {
@@ -392,6 +396,7 @@ testRAK13300() {
   
   # Store output for JSON
   [ -n "$OUTPUT" ] && json_store_output "testRAK13300" "$OUTPUT"
+  return 0
 }
 
 testRAK13302() {
@@ -410,6 +415,7 @@ testRAK13302() {
   
   # Store output for JSON
   [ -n "$OUTPUT" ] && json_store_output "testRAK13302" "$OUTPUT"
+  return 0
 }
 
 # -----------------------------------------------------------------------------
