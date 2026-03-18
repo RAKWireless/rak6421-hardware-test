@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-Simplified LoRa CW transmission script using libgpiod
-Sends once with preamble_length=450 and exits automatically
+LoRa CW transmission script - compatible with Raspberry Pi 4 and Pi 5.
+
+Uses libgpiod for pin 12/13 and rpi-lgpio for reset/busy (LoRaRF uses RPi.GPIO).
+Requires rpi-lgpio instead of RPi.GPIO - works on both Pi 4 and Pi 5.
+  pip install rpi-lgpio
+  pip uninstall RPi.GPIO  # if previously installed
 """
 
 __copyright__ = "Copyright 2026, RAKwireless"
 
-import os
 import sys
 import argparse
 import time
-from LoRaRF import SX126x
 import gpiod
+from LoRaRF import SX126x
 
 
 def lora_cw_simple(module_type="rak13300"):
@@ -118,7 +121,7 @@ def lora_cw_simple(module_type="rak13300"):
             if 'LoRa' in locals():
                 LoRa.setStandby(LoRa.STANDBY_RC)
                 LoRa.end()
-        except:
+        except Exception:
             pass
         
         # Cleanup GPIO
@@ -127,13 +130,14 @@ def lora_cw_simple(module_type="rak13300"):
             line_request.set_value(12, gpiod.line.Value.INACTIVE)
             line_request.release()
             chip.close()
-        except:
+        except Exception:
             pass
 
 
 def main():
-    """Main function"""
-    parser = argparse.ArgumentParser(description='Simplified LoRa CW Transmission Script')
+    parser = argparse.ArgumentParser(
+        description='LoRa CW Transmission (Pi 4 & Pi 5 compatible)'
+    )
     parser.add_argument('--module', type=str, default='rak13300', 
                        choices=['rak13300', 'rak13302'],
                        help='Module type (rak13300 or rak13302)')

@@ -18,8 +18,8 @@ adafruit-circuitpython-busdevice==5.2.3
 Adafruit-PlatformDetect==3.47.0
 Adafruit-PureIO==1.1.11
 
-# System dependencies
-RPi.GPIO==0.7.1
+# System dependencies - use rpi-lgpio for Pi 4 & Pi 5 (replaces RPi.GPIO)
+rpi-lgpio>=0.4.0
 spidev==3.6
 
 # lora sx1262 dependencies

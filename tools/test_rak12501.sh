@@ -4,6 +4,23 @@
 # Copyright 2025, RAKwireless
 #
 
+# Detect Pi 5: primary UART is ttyAMA0; Pi 4 and earlier use ttyS0
+_detect_gnss_port() {
+    if [ -n "$GNSS_PORT" ]; then
+        return  # User override
+    fi
+    if [ -r /proc/device-tree/model ]; then
+        model=$(tr -d '\0' < /proc/device-tree/model 2>/dev/null)
+        case "$model" in
+            *"Pi 5"*|*"Raspberry Pi 5"*) GNSS_PORT="/dev/ttyAMA0" ;;
+            *) GNSS_PORT="/dev/ttyS0" ;;
+        esac
+    else
+        GNSS_PORT="/dev/ttyS0"
+    fi
+}
+_detect_gnss_port
+
 # Configuration
 GNSS_PORT="${GNSS_PORT:-/dev/ttyS0}"
 GNSS_BAUD="${GNSS_BAUD:-9600}"
