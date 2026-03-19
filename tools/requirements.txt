@@ -18,12 +18,9 @@ adafruit-circuitpython-busdevice==5.2.3
 Adafruit-PlatformDetect==3.47.0
 Adafruit-PureIO==1.1.11
 
-# System dependencies - use rpi-lgpio for Pi 4 & Pi 5 (replaces RPi.GPIO)
-rpi-lgpio>=0.4.0
+# System dependencies
 spidev==3.6
 
-# NOTE: LoRaRF is NOT listed here because its dependency chain pulls in the
-# old RPi.GPIO which conflicts with rpi-lgpio on Pi 5.
-# It is installed separately with --no-deps in utils.sh pythonEnvSetup().
-# LoRaRF==1.4.0
+# LoRa SX1262
+LoRaRF==1.4.0
 

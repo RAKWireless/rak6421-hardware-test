@@ -76,39 +76,18 @@ pythonEnvSetup() {
     echo "${COLOR_INFO}Installing required python packages${COLOR_END}"
     
     # Check if USE_VENV is set to 0 (no virtual environment)
+    # This path is used by pi-gen firmware where packages are pre-installed.
+    # No pip install needed at runtime — just return.
     if [ "${USE_VENV:-1}" = "0" ]; then
-        echo "${COLOR_INFO}Installing packages system-wide (no virtual environment)${COLOR_END}"
-        
-        # Check if pip supports --break-system-packages flag
-        PIP_FLAGS=""
-        if pip3 install --help | grep -q "break-system-packages" 2>/dev/null; then
-            PIP_FLAGS="--break-system-packages"
-            echo "${COLOR_INFO}Using --break-system-packages flag${COLOR_END}"
-        fi
-        
-        # Install packages system-wide
-        # Suppress pip root-user warning noise (keep real errors visible)
-        sudo PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1 \
-            pip3 install -q $PIP_FLAGS -r tools/requirements.txt 2>&1 \
-          | grep -v -E "already satisfied|Running pip as the 'root' user|broken permissions|It is recommended to use a virtual environment instead|https://pip\\.pypa\\.io/warnings/venv" \
-          || true
-
-        # Install LoRaRF separately with --no-deps to prevent it from
-        # pulling in the old RPi.GPIO (which breaks Pi 5).
-        sudo PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1 \
-            pip3 install -q $PIP_FLAGS --no-deps LoRaRF==1.4.0 2>&1 \
-          | grep -v -E "already satisfied|Running pip as the 'root' user" \
-          || true
-
+        echo "${COLOR_INFO}Using system-wide packages (pre-installed)${COLOR_END}"
         return 0
     fi
     
-    # Default: Use virtual environment
+    # Default: Use virtual environment (for users who clone the repo)
     echo "${COLOR_INFO}Using virtual environment${COLOR_END}"
     
     # Check if .env exists and has correct ownership
     if [ -d .env ]; then
-        # Check if current user owns the .env directory
         if [ ! -O .env ]; then
             echo "${COLOR_WARNING}Removing .env directory with wrong ownership${COLOR_END}"
             rm -rf .env
@@ -123,8 +102,11 @@ pythonEnvSetup() {
     # Activate and install dependencies
     . .env/bin/activate
     pip install -q -r tools/requirements.txt 2>&1 | grep -v "already satisfied" || true
-    # Install LoRaRF with --no-deps to avoid RPi.GPIO conflict
-    pip install -q --no-deps LoRaRF==1.4.0 2>&1 | grep -v "already satisfied" || true
+
+    # LoRaRF and Adafruit-Blinka pull in the old RPi.GPIO which is
+    # incompatible with Pi 5. Replace it with rpi-lgpio (works on Pi 4 & 5).
+    pip uninstall -y RPi.GPIO 2>/dev/null || true
+    pip install -q --force-reinstall rpi-lgpio 2>&1 | grep -v "already satisfied" || true
 }
 
 pythonEnvRemove() {
