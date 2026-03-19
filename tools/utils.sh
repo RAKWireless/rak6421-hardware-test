@@ -92,6 +92,14 @@ pythonEnvSetup() {
             pip3 install -q $PIP_FLAGS -r tools/requirements.txt 2>&1 \
           | grep -v -E "already satisfied|Running pip as the 'root' user|broken permissions|It is recommended to use a virtual environment instead|https://pip\\.pypa\\.io/warnings/venv" \
           || true
+
+        # Install LoRaRF separately with --no-deps to prevent it from
+        # pulling in the old RPi.GPIO (which breaks Pi 5).
+        sudo PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1 \
+            pip3 install -q $PIP_FLAGS --no-deps LoRaRF==1.4.0 2>&1 \
+          | grep -v -E "already satisfied|Running pip as the 'root' user" \
+          || true
+
         return 0
     fi
     
@@ -115,6 +123,8 @@ pythonEnvSetup() {
     # Activate and install dependencies
     . .env/bin/activate
     pip install -q -r tools/requirements.txt 2>&1 | grep -v "already satisfied" || true
+    # Install LoRaRF with --no-deps to avoid RPi.GPIO conflict
+    pip install -q --no-deps LoRaRF==1.4.0 2>&1 | grep -v "already satisfied" || true
 }
 
 pythonEnvRemove() {

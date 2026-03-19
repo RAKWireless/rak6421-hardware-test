@@ -22,6 +22,8 @@ Adafruit-PureIO==1.1.11
 rpi-lgpio>=0.4.0
 spidev==3.6
 
-# lora sx1262 dependencies
-LoRaRF==1.4.0
+# NOTE: LoRaRF is NOT listed here because its dependency chain pulls in the
+# old RPi.GPIO which conflicts with rpi-lgpio on Pi 5.
+# It is installed separately with --no-deps in utils.sh pythonEnvSetup().
+# LoRaRF==1.4.0
 
