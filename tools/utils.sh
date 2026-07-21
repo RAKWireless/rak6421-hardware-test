@@ -74,9 +74,39 @@ dependencyCheck() {
 
 pythonEnvSetup() {
     echo "${COLOR_INFO}Installing required python packages${COLOR_END}"
-    [ ! -d .env ] && virtualenv .env  > /dev/null
+    
+    # Check if USE_VENV is set to 0 (no virtual environment)
+    # This path is used by pi-gen firmware where packages are pre-installed.
+    # No pip install needed at runtime — just return.
+    if [ "${USE_VENV:-1}" = "0" ]; then
+        echo "${COLOR_INFO}Using system-wide packages (pre-installed)${COLOR_END}"
+        return 0
+    fi
+    
+    # Default: Use virtual environment (for users who clone the repo)
+    echo "${COLOR_INFO}Using virtual environment${COLOR_END}"
+    
+    # Check if .env exists and has correct ownership
+    if [ -d .env ]; then
+        if [ ! -O .env ]; then
+            echo "${COLOR_WARNING}Removing .env directory with wrong ownership${COLOR_END}"
+            rm -rf .env
+        fi
+    fi
+    
+    # Create virtual environment if it doesn't exist
+    if [ ! -d .env ]; then
+        virtualenv .env  > /dev/null 2>&1
+    fi
+    
+    # Activate and install dependencies
     . .env/bin/activate
-    pip install -r tools/requirements.txt > /dev/null 
+    pip install -q -r tools/requirements.txt 2>&1 | grep -v "already satisfied" || true
+
+    # LoRaRF and Adafruit-Blinka pull in the old RPi.GPIO which is
+    # incompatible with Pi 5. Replace it with rpi-lgpio (works on Pi 4 & 5).
+    pip uninstall -y RPi.GPIO 2>/dev/null || true
+    pip install -q --force-reinstall rpi-lgpio 2>&1 | grep -v "already satisfied" || true
 }
 
 pythonEnvRemove() {
